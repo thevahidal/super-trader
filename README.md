@@ -67,7 +67,7 @@ Here's a sample scenario to use this project:
 
 2. List all shares
 
-    /api/v1/shares/ [GET]
+        /api/v1/shares/ [GET]
 
     You'll see the shares. Let's buy some Apple share. Notice that it's symbol is APL.
 
@@ -77,7 +77,7 @@ Here's a sample scenario to use this project:
 
         {
             "unit": 100,
-            "portfolioId": 1 // This is optional, if you not choose ant portfolio, system will use your default one instead 
+            "portfolioId": 1 // This is optional, if you don't choose any portfolio, system will use your default one instead 
         }
 
     Alright now you bought some Apple shares. Now let's sell some of it. Take note of the id of your bought asset, we'll be using this for selling the asset.
