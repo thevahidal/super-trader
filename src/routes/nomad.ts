@@ -39,6 +39,17 @@ router.get('/timestamp/', async (req, res) => {
  *     responses:
  *       200:
  *         description: Returns a message containing the user's name or email
+ *       401:
+ *          description: Unauthorized
+ *          content:
+ *           application/json:
+ *            schema:
+ *             type: object
+ *            properties:
+ *             error:
+ *              type: string
+ *            example:
+ *             error: unauthorized
  */
 router.get('/greeting/', checkAuthentication, async (req, res) => {
     res.json({

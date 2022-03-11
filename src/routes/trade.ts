@@ -9,6 +9,8 @@ import express from 'express';
 import { Prisma, PrismaClient } from '@prisma/client'
 
 import { checkAuthentication } from '../middleware/auth'
+import Joi from 'joi';
+import { schemaValidator } from '../utils';
 
 const prisma = new PrismaClient()
 const router = express.Router();
@@ -24,6 +26,17 @@ const router = express.Router();
  *     responses:
  *       200:
  *         description: Returns lists of all active shares
+ *       401:
+ *          description: Unauthorized
+ *          content:
+ *           application/json:
+ *            schema:
+ *             type: object
+ *            properties:
+ *             error:
+ *              type: string
+ *            example:
+ *             error: unauthorized
  */
 router.get('/shares/', async (req, res) => {
     const shares = await prisma.share.findMany({
@@ -37,6 +50,14 @@ router.get('/shares/', async (req, res) => {
     })
 });
 
+
+const buyShareInputSchema = Joi.object({
+    unit: Joi.number()
+        .min(0)
+        .required(),
+
+    portfolioId: Joi.number(),
+})
 /**
  * @openapi
  * /api/v1/shares/{shareSymbol}/buy/:
@@ -50,7 +71,8 @@ router.get('/shares/', async (req, res) => {
  *        required: true
  *        schema:
  *         type: string
- *         description: The symbol of the share to buy
+ *        description: The symbol of the share to buy (Uppercase)
+ *        example: APL
  *     requestBody:
  *       required: true
  *       content:
@@ -66,11 +88,70 @@ router.get('/shares/', async (req, res) => {
  *     responses:
  *       200:
  *         description: Returns the created asset and its trade
+ *       400:
+ *         description: Invalid input
+ *         content:
+ *          application/json:
+ *           schema:
+ *            type: object
+ *           properties:
+ *            error:
+ *             type: string
+ *            payload:
+ *             type: object
+ *           example:
+ *            error: invalid_input
+ *            payload: {
+ *             "unit": "This field is required"
+ *            }
+ *       401:
+ *          description: Unauthorized
+ *          content:
+ *           application/json:
+ *            schema:
+ *             type: object
+ *            properties:
+ *             error:
+ *              type: string
+ *            example:
+ *             error: unauthorized
+ *       404:
+ *         description: Share not found
+ *         content:
+ *          application/json:
+ *           schema:
+ *            type: object
+ *           properties:
+ *            error:
+ *             type: string
+ *           example:
+ *            error: share_not_found
+ *       422:
+ *         description: Portfolio not exists
+ *         content:
+ *          application/json:
+ *           schema:
+ *            type: object
+ *           properties:
+ *            error:
+ *             type: string
+ *           example:
+ *            error: portfolio_not_found
  */
 router.post('/shares/:shareSymbol/buy/', checkAuthentication, async (req, res) => {
     const { shareSymbol } = req.params
-    const { unit, portfolioId } = req.body
     const { user } = req
+    
+    const { value: data, error, isInvalid } = schemaValidator(req.body, buyShareInputSchema)
+    
+    if (isInvalid) {
+        return res.status(400).json({
+            error: "invalid_input",
+            payload: error,
+        })
+    }
+
+    const { unit, portfolioId } = data
 
     const share = await prisma.share.findFirst({
         where: {
@@ -81,18 +162,6 @@ router.post('/shares/:shareSymbol/buy/', checkAuthentication, async (req, res) =
     if (!share) {
         return res.status(404).json({
             error: "share_not_found",
-        })
-    }
-
-    if (!unit) {
-        return res.status(400).json({
-            error: "unit_required"
-        })
-    }
-
-    if (unit <= 0) {
-        return res.status(400).json({
-            error: "unit_must_be_greater_than_zero"
         })
     }
 
@@ -119,7 +188,7 @@ router.post('/shares/:shareSymbol/buy/', checkAuthentication, async (req, res) =
     }
 
     if (!portfolio) {
-        return res.status(400).json({
+        return res.status(422).json({
             error: "portfolio_not_found",
         })
     }
@@ -168,6 +237,13 @@ router.post('/shares/:shareSymbol/buy/', checkAuthentication, async (req, res) =
 });
 
 
+
+const sellAssetInputSchema = Joi.object({
+    unit: Joi.number()
+        .min(0)
+        .required(),
+})
+
 /**
  * @openapi
  * /api/v1/assets/{assetId}/sell/:
@@ -181,7 +257,8 @@ router.post('/shares/:shareSymbol/buy/', checkAuthentication, async (req, res) =
  *        required: true
  *        schema:
  *         type: string
- *         description: The id of the asset to sell
+ *        description: The id of the asset to sell
+ *        example: 1
  *     requestBody:
  *       required: true
  *       content:
@@ -195,11 +272,81 @@ router.post('/shares/:shareSymbol/buy/', checkAuthentication, async (req, res) =
  *     responses:
  *       200:
  *         description: Returns the sold asset and its trade
+ *       400:
+ *         description: Invalid input
+ *         content:
+ *          application/json:
+ *           schema:
+ *            type: object
+ *           properties:
+ *            error:
+ *             type: string
+ *            payload:
+ *             type: object
+ *           example:
+ *            error: invalid_input
+ *            payload: {
+ *             "unit": "This field is required"
+ *            }
+ *       401:
+ *          description: Unauthorized
+ *          content:
+ *           application/json:
+ *            schema:
+ *             type: object
+ *            properties:
+ *             error:
+ *              type: string
+ *            example:
+ *             error: unauthorized
+ *       403:
+ *         description: Asset is closed (Sold)
+ *         content:
+ *          application/json:
+ *           schema:
+ *            type: object
+ *           properties:
+ *            error:
+ *             type: string
+ *           example:
+ *              error: asset_closed
+ *       404:
+ *         description: Asset not found
+ *         content:
+ *          application/json:
+ *           schema:
+ *            type: object
+ *           properties:
+ *            error:
+ *             type: string
+ *           example:
+ *              error: asset_not_found
+ *       422:
+ *         description: Unit more than asset unit
+ *         content:
+ *          application/json:
+ *           schema:
+ *            type: object
+ *           properties:
+ *            error:
+ *             type: string
+ *           example:
+ *            error: unit_must_be_less_than_or_equal_to_asset_unit
  */
 router.post('/assets/:assetId/sell/', checkAuthentication, async (req, res) => {
     const { assetId } = req.params
-    const { unit } = req.body
     const { user } = req
+
+    const { value: data, error, isInvalid } = schemaValidator(req.body, sellAssetInputSchema)
+    
+    if (isInvalid) {
+        return res.status(400).json({
+            error: "invalid_input",
+            payload: error,
+        })
+    }
+
+    const { unit } = data
 
     let asset = null
     try {
@@ -226,25 +373,13 @@ router.post('/assets/:assetId/sell/', checkAuthentication, async (req, res) => {
     }
 
     if (!asset.active) {
-        return res.status(400).json({
-            error: "asset_inactive",
-        })
-    }
-
-    if (!unit) {
-        return res.status(400).json({
-            error: "unit_required"
-        })
-    }
-
-    if (unit <= 0) {
-        return res.status(400).json({
-            error: "unit_must_be_greater_than_zero"
+        return res.status(403).json({
+            error: "asset_closed",
         })
     }
 
     if (unit > asset.unit) {
-        return res.status(400).json({
+        return res.status(422).json({
             error: "unit_must_be_less_than_or_equal_to_asset_unit",
             payload: {
                 slack: unit - +asset.unit,

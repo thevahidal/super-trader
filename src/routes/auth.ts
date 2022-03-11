@@ -9,13 +9,33 @@ import express from 'express';
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { Prisma, PrismaClient } from '@prisma/client'
+import Joi from 'joi';
 
 import { checkAuthentication } from '../middleware/auth'
 import { JWT_EXPIRY_SECONDS, JWT_SECRET_KEY } from '../constants/auth';
+import { schemaValidator } from '../utils';
 
 const prisma = new PrismaClient()
 const router = express.Router();
 
+
+const registerInputSchema = Joi.object({
+    firstName: Joi.string()
+        .min(2)
+        .max(30),
+    
+    lastName: Joi.string()
+        .min(2)
+        .max(30),
+
+    email: Joi.string()
+        .email({ minDomainSegments: 2, tlds: { allow: ['com', 'net'] } })
+        .required(),
+    
+    password: Joi.string()
+        .pattern(new RegExp('^[a-zA-Z0-9]{3,30}$'))
+        .required(),
+})
 
 /**
  * @openapi
@@ -43,6 +63,22 @@ const router = express.Router();
  *       200:
  *         description: Returns success message and created default portfolio and sets token cookie
  *       400:
+ *         description: Invalid input
+ *         content:
+ *          application/json:
+ *           schema:
+ *            type: object
+ *           properties:
+ *            error:
+ *             type: string
+ *            payload:
+ *             type: object
+ *           example:
+ *            error: invalid_input
+ *            payload: {
+ *             "password": "This field is required"
+ *            }
+ *       422:
  *         description: User already exists
  *         content:
  *          application/json:
@@ -56,16 +92,16 @@ const router = express.Router();
  * 
  */
 router.post('/register/', async (req, res) => {
-    const { firstName, lastName, email, password } = req.body
-    if (!email || !password) {
-        return res.status(400).end()
+    const { value: data, error, isInvalid } = schemaValidator(req.body, registerInputSchema)
+    
+    if (isInvalid) {
+        return res.status(400).json({
+            error: "invalid_input",
+            payload: error,
+        })
     }
 
-    const data = {
-        firstName,
-        lastName,
-        email: email.toLowerCase(),
-    }
+    const { password } = data
 
     let user = await prisma.user.findFirst({
         where: {
@@ -112,6 +148,17 @@ router.post('/register/', async (req, res) => {
     })
 });
 
+
+const obtainTokenInputSchema = Joi.object({
+    email: Joi.string()
+        .email({ minDomainSegments: 2, tlds: { allow: ['com', 'net'] } })
+        .required(),
+    
+    password: Joi.string()
+        .pattern(new RegExp('^[a-zA-Z0-9]{3,30}$'))
+        .required(),
+})
+
 /**
  * @openapi
  * /api/v1/auth/token/obtain/:
@@ -134,16 +181,44 @@ router.post('/register/', async (req, res) => {
  *       200:
  *         description: Sets token cookie
  *       400:
- *         description: Returns an error message
+ *         description: Invalid input
+ *         content:
+ *          application/json:
+ *           schema:
+ *            type: object
+ *           properties:
+ *            error:
+ *             type: string
+ *            payload:
+ *             type: object
+ *           example:
+ *            error: invalid_input
+ *            payload: {
+ *             "password": "This field is required"
+ *            }
+ *       401:
+ *         description: Invalid credentials
+ *         content:
+ *          application/json:
+ *           schema:
+ *            type: object
+ *           properties:
+ *            error:
+ *             type: string
+ *           example:
+ *            error: invalid_credentials
  */
 router.post('/token/obtain/', async (req, res) => {
-    const { email, password } = req.body
-    if (!email || !password) {
-        return res.status(401).json({
-            error: "missing_credentials"
+    const { value: data, error, isInvalid } = schemaValidator(req.body, obtainTokenInputSchema)
+    
+    if (isInvalid) {
+        return res.status(400).json({
+            error: "invalid_input",
+            payload: error,
         })
     }
 
+    const { email } = data
     const user = await prisma.user.findFirst({
         where: {
             email: email.toLowerCase(),
@@ -156,14 +231,13 @@ router.post('/token/obtain/', async (req, res) => {
         })
     }
 
-    const data = {
-        id: user.id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-    }
-
-    const token = jwt.sign({ ...data }, (<any>JWT_SECRET_KEY), {
+    const { id, firstName, lastName } = user
+    const token = jwt.sign({
+        id,
+        firstName,
+        lastName,
+        email,
+    }, (<any>JWT_SECRET_KEY), {
         algorithm: "HS256",
         expiresIn: JWT_EXPIRY_SECONDS,
     })
