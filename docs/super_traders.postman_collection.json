@@ -1,0 +1,231 @@
+{
+	"info": {
+		"_postman_id": "52e58c9e-17b5-47fd-86ba-cd86b5c62a2f",
+		"name": "Super Traders",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "auth",
+			"item": [
+				{
+					"name": "Register",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"vahid@example.com\",\n    \"password\": \"password1234\",\n    \"firstName\": \"Vahid\",\n    \"lastName\": \"Al\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url_v1}}/auth/register/",
+							"host": [
+								"{{base_url_v1}}"
+							],
+							"path": [
+								"auth",
+								"register",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obtain Token",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"vahid@example.com\",\n    \"password\": \"password1234\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url_v1}}/auth/token/obtain/",
+							"host": [
+								"{{base_url_v1}}"
+							],
+							"path": [
+								"auth",
+								"token",
+								"obtain",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "trades",
+			"item": [
+				{
+					"name": "List Shares",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url_v1}}/shares/",
+							"host": [
+								"{{base_url_v1}}"
+							],
+							"path": [
+								"shares",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Buy Share",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"portfolioId\": 2,\n    \"unit\": 10\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url_v1}}/shares/APL/buy/",
+							"host": [
+								"{{base_url_v1}}"
+							],
+							"path": [
+								"shares",
+								"APL",
+								"buy",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Sell Asset",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"portfolioId\": 1,\n    \"unit\": 5\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url_v1}}/assets/2/sell/",
+							"host": [
+								"{{base_url_v1}}"
+							],
+							"path": [
+								"assets",
+								"2",
+								"sell",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "portfolios",
+			"item": [
+				{
+					"name": "List Portfolios",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url_v1}}/portfolios/",
+							"host": [
+								"{{base_url_v1}}"
+							],
+							"path": [
+								"portfolios",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Assets of a Portfolio",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url_v1}}/portfolios/2/assets/",
+							"host": [
+								"{{base_url_v1}}"
+							],
+							"path": [
+								"portfolios",
+								"2",
+								"assets",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Timestamp",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url_v1}}/timestamp/",
+					"host": [
+						"{{base_url_v1}}"
+					],
+					"path": [
+						"timestamp",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Greeting",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url_v1}}/greeting/",
+					"host": [
+						"{{base_url_v1}}"
+					],
+					"path": [
+						"greeting",
+						""
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
