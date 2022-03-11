@@ -9,6 +9,7 @@ import nomadRoutes from './routes/nomad'
 import tradeRoutes from './routes/trade'
 import portfolioRoutes from './routes/portfolio'
 
+
 const app = express()
 
 app.use(express.json())
@@ -23,7 +24,7 @@ app.use(`/api/v1/auth/`, authRoutes)
 // swagger options
 const options = {
   definition: {
-    openapi: "3.0.0",
+    openapi: "3.0.1",
     info: {
       title: "Super Traders API",
       version: "0.1.0",
@@ -43,23 +44,12 @@ const options = {
       },
     ],
   },
-
   apis: ["./src/routes/*"],
 };
 
 // swagger ui options
 const swaggerUiOptions = {
   explorer: true,
-  swaggerOptions: {
-    basicAuth: {
-      name: 'Authorization',
-      schema: {
-        type: 'basic',
-        in: 'header'
-      },
-      value: 'Basic <user:password>'
-    }
-  }
 }
 
 const specs = swaggerJsdoc(options);
