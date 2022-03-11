@@ -106,7 +106,7 @@ Here's a sample scenario to use this project:
 
 7. Let's buy some more Apple shares! Maybe 2 more times! (Step "3") x 2
 
-8. Then lets see all our assets once more. You see that we have 3 apple assets! But we would like to see all our apple assets together! (Aggregated / Grouped)
+8. Then lets see all our assets once more. You see that we have 3 apple assets! But we would like to see all our apple assets together! (Aggregated / Grouped) (Step "6")
 
 9. Let's see the aggregated assets!
 

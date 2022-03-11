@@ -549,13 +549,12 @@ router.post('/assets/:assetId/sell/', checkAuthentication, async (req, res) => {
         }
     }) 
 
-    console.log(assetsUnits)
 
-    if (unit > +assetsUnits?._sum?.unit) {
+    if (unit > +(<any> assetsUnits)._sum.unit) {
         return res.status(422).json({
             error: "not_sufficient_assets",
             payload: {
-                slack: unit - +assetsUnits?._sum?.unit,
+                slack: unit - +(<any> assetsUnits)._sum.unit,
             }
         })
     }
