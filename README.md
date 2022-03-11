@@ -104,6 +104,25 @@ Here's a sample scenario to use this project:
 
     Cool! You'll see that you have 50 shares of Apple! (Remember you sold half of Apple share, right?)
 
+7. Let's buy some more Apple shares! Maybe 2 more times! (Step "3") x 2
+
+8. Then lets see all our assets once more. You see that we have 3 apple assets! But we would like to see all our apple assets together! (Aggregated / Grouped)
+
+9. Let's see the aggregated assets!
+
+        /api/v1/portfolios/1/asset/?grouped=true [GET] 
+
+    Awesome, now you see all you Apple share all grouped and together!
+
+10. Alright now maybe you're thinking if I can see my Apple shares together, how can I sell them together?
+
+        /api/v1/shares/APL/sell/ [POST]
+        {
+            "unit": 100,
+        }
+
+    So it sold some assets to cover your need 100 units!
+
 0. Did your token get expired?
 
         /api/v1/auth/token/obtain/ [POST]

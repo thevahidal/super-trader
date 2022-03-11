@@ -61,9 +61,16 @@ router.get('/', checkAuthentication, async (req, res) => {
  *        in: path
  *        required: true
  *        schema:
- *         type: id
+ *         type: number
  *        description: The id of your portfolio
  *        example: 1
+ *      - name: grouped
+ *        in: query
+ *        required: false
+ *        schema:
+ *         type: boolean
+ *        description: Whether to group assets by share
+ *        example: true
  *     responses:
  *       200:
  *         description: Returns all active assets in a portfolio
@@ -81,10 +88,9 @@ router.get('/', checkAuthentication, async (req, res) => {
  */
 router.get('/:portfolioId/assets/', checkAuthentication, async (req, res) => {
     const { portfolioId } = req.params
+    const { grouped } = req.query
     const { user } = req
 
-    console.log(portfolioId)
-    
     const portfolio = await prisma.portfolio.findFirst({
         where: {
             id: parseInt(portfolioId),
@@ -98,14 +104,42 @@ router.get('/:portfolioId/assets/', checkAuthentication, async (req, res) => {
         })
     }
 
-    const assets = await prisma.asset.findMany({
-        where: {
-            portfolio: {
-                id: portfolio.id,
+    let assets: any = []
+    if (grouped !== "true") {
+        assets = await prisma.asset.findMany({
+            where: {
+                portfolio: {
+                    id: portfolio.id,
+                },
+                active: true,
             },
-            active: true,
-        },
-    })
+            include: {
+                share: {
+                    select: {
+                        id: true,
+                        symbol: true,
+                        name: true,
+                        price: true,
+                    }
+                }
+            },
+        })
+
+    } else {
+        assets = await prisma.asset.groupBy({
+            by: ['shareId'],
+
+            where: {
+                portfolio: {
+                    id: portfolio.id,
+                },
+                active: true,
+            },
+            _sum: {
+                unit: true,
+            },
+        })
+    }
 
     res.status(200).json({
         results: assets,
