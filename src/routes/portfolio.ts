@@ -24,6 +24,17 @@ const router = express.Router();
  *     responses:
  *       200:
  *         description: Returns lists of all your portfolios
+ *       401:
+ *          description: Unauthorized
+ *          content:
+ *           application/json:
+ *            schema:
+ *             type: object
+ *            properties:
+ *             error:
+ *              type: string
+ *            example:
+ *             error: unauthorized
  */
 router.get('/', checkAuthentication, async (req, res) => {
     const { user } = req
@@ -51,10 +62,22 @@ router.get('/', checkAuthentication, async (req, res) => {
  *        required: true
  *        schema:
  *         type: id
- *         description: The id of your portfolio
+ *        description: The id of your portfolio
+ *        example: 1
  *     responses:
  *       200:
  *         description: Returns all active assets in a portfolio
+ *       401:
+ *          description: Unauthorized
+ *          content:
+ *           application/json:
+ *            schema:
+ *             type: object
+ *            properties:
+ *             error:
+ *              type: string
+ *            example:
+ *             error: unauthorized
  */
 router.get('/:portfolioId/assets/', checkAuthentication, async (req, res) => {
     const { portfolioId } = req.params

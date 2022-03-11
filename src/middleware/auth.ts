@@ -23,7 +23,7 @@ export const checkAuthentication = async (req: Request, res: Response, next: Nex
 
     if (!token) {
         return res.status(401).json({
-            error: "token_not_found"
+            error: "unauthorized"
         })
     }
 
@@ -33,18 +33,18 @@ export const checkAuthentication = async (req: Request, res: Response, next: Nex
     } catch (e) {
         if (e instanceof jwt.JsonWebTokenError) {
             return res.status(401).json({
-                error: "token_not_found"
+                error: "unauthorized"
             })
         }
-        return res.status(400).json({
-            error: "token_not_found"
+        return res.status(401).json({
+            error: "unauthorized"
         })
     }
 
     const nowUnixSeconds = Math.round(Number(new Date()) / 1000)
     if ((<any> payload).exp - nowUnixSeconds > JWT_EXPIRY_SECONDS) {
-        return res.status(400).json({
-            error: "token_expired"
+        return res.status(401).json({
+            error: "unauthorized"
         })
     }
 

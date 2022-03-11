@@ -45,7 +45,9 @@ The server is now running on `http://localhost:8080`. You can now call the API r
 
 
 ## Docs
-There's a swagger doc available at [`http://localhost:8080/docs/`](http://localhost:8080/docs/), which you can see the APIs and run them at the same time. Also there's a postman collection in [`docs/`](docs/) directory.
+There's a swagger doc available at [`http://localhost:8080/docs/`](http://localhost:8080/docs/), which you can see the APIs and run them at the same time. (Better) 
+
+Also there's a postman collection in [`docs/`](docs/) directory.
 
 ## How to use this
 Here's a sample scenario to use this project:
