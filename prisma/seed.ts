@@ -8,31 +8,9 @@ const userData: Prisma.UserCreateInput[] = [
     firstName: 'Mark',
     lastName: 'Smith',
     password: '$2b$10$Xx.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.',
-  }, {
-    email: 'jake@example.com',
-    firstName: 'Jake',
-    lastName: 'Smith',
-    password: '$2b$10$Xx.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.',
-  },
-  {
-    email: 'sarah@example.com',
-    firstName: 'Sarah',
-    lastName: 'Smith',
-    password: '$2b$10$Xx.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.',
-  },
-  {
-    email: 'elizabeth@example.com',
-    firstName: 'Elizabeth',
-    lastName: 'Smith',
-    password: '$2b$10$Xx.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.',
-  },
-  {
-    email: 'larry@example.com',
-    firstName: 'Larry',
-    lastName: 'Smith',
-    password: '$2b$10$Xx.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.Q.',
-  },
+  }, 
 ]
+
 
 const shareData: Prisma.ShareCreateInput[] = [
   {
@@ -57,6 +35,44 @@ const shareData: Prisma.ShareCreateInput[] = [
   },
 ]
 
+const assetData: Prisma.AssetCreateInput[] = [
+  {
+    share: {
+      connect: {
+        symbol: 'APL',
+      },
+    },
+    portfolio: {
+      create: {
+        user: {
+          connect: {
+            email: 'mark@example.com',
+          },
+        },
+        default: true,
+      },
+    },
+    unit: 50,
+    trades: {
+      create: [
+        {
+          sharePrice: 90.88,
+          unit: 100,
+          isBuy: true,
+          amount: 9088.00,
+
+        },
+        {
+          sharePrice: 90.88,
+          unit: 50,
+          isBuy: false,
+          amount: 4544.00,
+        },
+      ],
+    },
+    active: true,
+  },
+]
 
 async function main() {
   console.log(`Start seeding ...`)
@@ -72,6 +88,13 @@ async function main() {
       data: s,
     })
     console.log(`Created share with id: ${share.id}`)
+  }
+
+  for (const a of assetData) {
+    const asset = await prisma.asset.create({
+      data: a,
+    })
+    console.log(`Created asset with id: ${asset.id}`)
   }
 
   console.log(`Seeding finished.`)

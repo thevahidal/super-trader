@@ -5,6 +5,19 @@ import { NextFunction, Request, Response } from 'express'
 
 const prisma = new PrismaClient()
 
+/**
+ * Check authentication middleware
+ * Checks if the user is authenticated,
+ * if not, response with 401 Unauthorized,
+ * otherwise, add user to req object (req.user),
+ * and call next() to continue the request
+ * 
+ * @name checkAuthentication
+ * @function
+ * @param {Object} req
+ * @param {Object} res
+ * @param {Object} next
+ */
 export const checkAuthentication = async (req: Request, res: Response, next: NextFunction) => {
     const token = req.cookies.token
 

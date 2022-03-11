@@ -1,3 +1,10 @@
+/**
+ * @swagger
+ * tags:
+ *  name: Auth
+ *  description: Authentication APIs
+ */
+
 import express from 'express';
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
@@ -10,10 +17,38 @@ const prisma = new PrismaClient()
 const router = express.Router();
 
 
+/**
+ * @openapi
+ * /api/v1/auth/register/:
+ *   post:
+ *     summary: Register new user
+ *     tags: [Auth]
+ *     description: Register API
+ *     requestBody:
+ *       required: true
+ *       content:
+ *        application/json:
+ *         schema:
+ *          type: object
+ *          properties:
+ *           email:
+ *            type: string
+ *           firstName:
+ *            type: string
+ *           lastName:
+ *            type: string
+ *           password:
+ *            type: string
+ *     responses:
+ *       200:
+ *         description: Returns the created default portfolio and sets token cookie
+ *       400:
+ *         description: Returns an error message
+ */
 router.post('/register/', async (req, res) => {
     const { firstName, lastName, email, password } = req.body
     if (!email || !password) {
-        return res.status(401).end()
+        return res.status(400).end()
     }
 
     const data = {
@@ -67,6 +102,30 @@ router.post('/register/', async (req, res) => {
     })
 });
 
+/**
+ * @openapi
+ * /api/v1/auth/token/obtain/:
+ *   post:
+ *     summary: Obtain new token
+ *     tags: [Auth]
+ *     description: Login API
+ *     requestBody:
+ *       required: true
+ *       content:
+ *        application/json:
+ *         schema:
+ *          type: object
+ *          properties:
+ *           email:
+ *            type: string
+ *           password:
+ *            type: string
+ *     responses:
+ *       200:
+ *         description: Sets token cookie
+ *       400:
+ *         description: Returns an error message
+ */
 router.post('/token/obtain/', async (req, res) => {
     const { email, password } = req.body
     if (!email || !password) {
@@ -99,28 +158,6 @@ router.post('/token/obtain/', async (req, res) => {
     res.json({
         error: null,
         message: "Token obtained successfully",
-    })
-});
-
-router.post('/token/refresh/', checkAuthentication, async (req, res) => {
-    const user = req.user
-
-    const data = {
-        id: user.id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-    }
-
-    const newToken = jwt.sign({ ...data }, (<any> JWT_SECRET_KEY), {
-        algorithm: "HS256",
-        expiresIn: JWT_EXPIRY_SECONDS,
-    })
-
-    res.cookie("token", newToken, { maxAge: JWT_EXPIRY_SECONDS * 1000 })
-    res.json({
-        error: null,
-        message: "Token refreshed successfully",
     })
 });
 

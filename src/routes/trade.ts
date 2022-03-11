@@ -1,3 +1,10 @@
+/**
+ * @swagger
+ * tags:
+ *  name: Trade
+ *  description: Trading APIs
+ */
+
 import express from 'express';
 import { Prisma, PrismaClient } from '@prisma/client'
 
@@ -7,14 +14,59 @@ const prisma = new PrismaClient()
 const router = express.Router();
 
 
+/**
+ * @openapi
+ * /api/v1/shares/:
+ *   get:
+ *     summary: Lists all active shares
+ *     tags: [Trade]
+ *     description: Shares API
+ *     responses:
+ *       200:
+ *         description: Returns lists of all active shares
+ */
 router.get('/shares/', async (req, res) => {
-    const shares = await prisma.share.findMany()
+    const shares = await prisma.share.findMany({
+        where: {
+            active: true,
+        },
+    })
 
     res.json({
         results: shares,
     })
 });
 
+/**
+ * @openapi
+ * /api/v1/shares/{shareSymbol}/buy/:
+ *   post:
+ *     summary: Buy a share
+ *     tags: [Trade]
+ *     description: Buying share API
+ *     parameters:
+ *      - name: shareSymbol
+ *        in: path
+ *        required: true
+ *        schema:
+ *         type: string
+ *         description: The symbol of the share to buy
+ *     requestBody:
+ *       required: true
+ *       content:
+ *        application/json:
+ *         schema:
+ *          type: object
+ *          properties:
+ *           unit:
+ *            type: number
+ *            minimum: 0
+ *           portfolioId:
+ *            type: string
+ *     responses:
+ *       200:
+ *         description: Returns the created asset and its trade
+ */
 router.post('/shares/:shareSymbol/buy/', checkAuthentication, async (req, res) => {
     const { shareSymbol } = req.params
     const { unit, portfolioId } = req.body
@@ -116,7 +168,34 @@ router.post('/shares/:shareSymbol/buy/', checkAuthentication, async (req, res) =
 });
 
 
-
+/**
+ * @openapi
+ * /api/v1/assets/{assetId}/sell/:
+ *   post:
+ *     summary: Sell an asset
+ *     tags: [Trade]
+ *     description: Selling assets API
+ *     parameters:
+ *      - name: assetId
+ *        in: path
+ *        required: true
+ *        schema:
+ *         type: string
+ *         description: The id of the asset to sell
+ *     requestBody:
+ *       required: true
+ *       content:
+ *        application/json:
+ *         schema:
+ *          type: object
+ *          properties:
+ *           unit:
+ *            type: number
+ *            minimum: 0
+ *     responses:
+ *       200:
+ *         description: Returns the sold asset and its trade
+ */
 router.post('/assets/:assetId/sell/', checkAuthentication, async (req, res) => {
     const { assetId } = req.params
     const { unit } = req.body
