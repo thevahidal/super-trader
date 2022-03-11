@@ -41,9 +41,19 @@ const router = express.Router();
  *            type: string
  *     responses:
  *       200:
- *         description: Returns the created default portfolio and sets token cookie
+ *         description: Returns success message and created default portfolio and sets token cookie
  *       400:
- *         description: Returns an error message
+ *         description: User already exists
+ *         content:
+ *          application/json:
+ *           schema:
+ *            type: object
+ *           properties:
+ *            error:
+ *             type: string
+ *           example:
+ *            error: user_already_exists
+ * 
  */
 router.post('/register/', async (req, res) => {
     const { firstName, lastName, email, password } = req.body
@@ -87,7 +97,7 @@ router.post('/register/', async (req, res) => {
         }
     })
 
-    const token = jwt.sign({ id: user.id, ...data }, (<any> JWT_SECRET_KEY), {
+    const token = jwt.sign({ id: user.id, ...data }, (<any>JWT_SECRET_KEY), {
         algorithm: "HS256",
         expiresIn: JWT_EXPIRY_SECONDS,
     })
@@ -98,7 +108,7 @@ router.post('/register/', async (req, res) => {
         message: "User created successfully",
         payload: {
             defaultPortfolio: portfolio.id,
-        }            
+        }
     })
 });
 
@@ -129,7 +139,9 @@ router.post('/register/', async (req, res) => {
 router.post('/token/obtain/', async (req, res) => {
     const { email, password } = req.body
     if (!email || !password) {
-        return res.status(401).end()
+        return res.status(401).json({
+            error: "missing_credentials"
+        })
     }
 
     const user = await prisma.user.findFirst({
@@ -139,7 +151,9 @@ router.post('/token/obtain/', async (req, res) => {
     })
 
     if (!user) {
-        return res.status(401).end()
+        return res.status(401).json({
+            error: "invalid_credentials"
+        })
     }
 
     const data = {
@@ -149,7 +163,7 @@ router.post('/token/obtain/', async (req, res) => {
         email: user.email,
     }
 
-    const token = jwt.sign({ ...data }, (<any> JWT_SECRET_KEY), {
+    const token = jwt.sign({ ...data }, (<any>JWT_SECRET_KEY), {
         algorithm: "HS256",
         expiresIn: JWT_EXPIRY_SECONDS,
     })
