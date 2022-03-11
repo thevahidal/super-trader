@@ -42,3 +42,71 @@ npm run dev
 ```
 
 The server is now running on `http://localhost:8080`. You can now call the API requests, e.g. [`http://localhost:8080/api/v1/timestamp/`](http://localhost:8080/api/v1/timestamp/).
+
+
+## Docs
+There's a swagger doc available at [`http://localhost:8080/docs/`](http://localhost:8080/docs/), which you can see the APIs and run them at the same time. Also there's a postman collection in [`docs/`](docs/) directory.
+
+## How to use this
+Here's a sample scenario to use this project:
+    
+1. Register a new User. 
+
+        /api/v1/auth/register/ [POST]
+
+        {
+            "email": "mark@example.com",
+            "firstName": "Mark",
+            "lastName": "Smith",
+            "password": "strong@password" 
+        }
+    
+    It will automatically set a token cookie for you. You'll be able to call private APIs from now on.
+
+2. List all shares
+
+    /api/v1/shares/ [GET]
+
+    You'll see the shares. Let's buy some Apple share. Notice that it's symbol is APL.
+
+3. Buy some Apple (APL)
+
+        /api/v1/shares/APL/buy/ [POST]
+
+        {
+            "unit": 100,
+            "portfolioId": 1 // This is optional, if you not choose ant portfolio, system will use your default one instead 
+        }
+
+    Alright now you bought some Apple shares. Now let's sell some of it. Take note of the id of your bought asset, we'll be using this for selling the asset.
+
+4. Sell some of your Apple asset
+
+        /api/v1/assets/1/sell/ [POST] ("1" here is the id your asset.)
+
+        {
+            "unit": 50,
+        }
+
+    Cool now you sold half of you Apple share! Alright Let's see your portfolios now!
+
+5. List your portfolios
+
+        /api/v1/portfolios/ [GET]
+
+    Right now you only have you're default portfolio which was created for you as you registered. Take note of it's id, we're going to use to see how many assets you have in there!
+
+6. List asset of your portfolio
+
+        /api/v1/portfolios/1/asset/ [GET]  ("1" here is the id your portfolio.)
+
+    Cool! You'll see that you have 50 shares of Apple! (Remember you sold half of Apple share, right?)
+
+0. Did your token get expired?
+
+        /api/v1/auth/token/obtain/ [POST]
+
+        {
+            "email": "mark@example.com",
+            "password": "strong@password" 
+        }
